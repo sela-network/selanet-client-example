@@ -12,10 +12,10 @@ Options:
   --comments N  Number of comments per note. 0 = skip comments.
 
 Usage:
-  python platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10
-  python platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 50 --comments 30
-  python platforms/xiaohongshu/collect_by_keyword.py --keyword "xiaomi" --count 50 --parallel
-  python platforms/xiaohongshu/collect_by_keyword.py --keyword "xiaomi" --count 50 --parallel --comments 0
+  uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10
+  uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "xiaomi" --count 1000 --comments 450 --parallel
+  uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "xiaomi" --count 50 --parallel
+  uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "xiaomi" --count 50 --parallel --comments 0
 
 Periods: day, week, half_year, all
 Sort:    comprehensive, newest, most_liked, most_commented, most_collected
