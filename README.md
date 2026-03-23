@@ -16,7 +16,13 @@ cp .env.example .env
 # Add your SELA_API_KEY (get one at https://selanet.io)
 
 # Run an example
-uv run python platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10
+uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10
+
+# Run with comments
+uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10 --comments 100
+
+# Run with comments and parallel
+uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10 --comments 100 --parallel
 ```
 
 ## Platforms
