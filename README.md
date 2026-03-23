@@ -1,0 +1,43 @@
+# Selanet Client Examples
+
+Example collection for the [Selanet SDK](https://selanet.io).
+
+## Quick Start
+
+```bash
+git clone https://github.com/selanet/selanet-client-example.git
+cd selanet-client-example
+
+# Install dependencies
+uv sync
+
+# Set API key
+cp .env.example .env
+# Add your SELA_API_KEY (get one at https://selanet.io)
+
+# Run an example
+uv run python platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10
+```
+
+## Platforms
+
+| Platform | Examples |
+|----------|----------|
+| [Xiaohongshu (RED)](platforms/xiaohongshu/) | Keyword search, parallel detail + comment collection |
+
+## Sample Output
+
+See [`examples/sample_output/`](examples/sample_output/) for example JSONL output.
+
+## Requirements
+
+- Python 3.10+
+- [Selanet API Key](https://selanet.io)
+
+## Disclaimer
+
+Users are solely responsible for ensuring compliance with all applicable laws, regulations, and platform terms of service. Data collection must respect the target platform's terms of service and applicable data protection regulations (GDPR, PIPL, CCPA, etc.). The authors assume no liability for misuse.
+
+## License
+
+[MIT](LICENSE)

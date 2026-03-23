@@ -1,0 +1,9 @@
+[project]
+name = "selanet-client-example"
+version = "0.1.0"
+description = "Selanet SDK example collection — platform data collection examples"
+requires-python = ">=3.10"
+dependencies = [
+    "selanet-sdk>=0.2.2",
+    "python-dotenv",
+]

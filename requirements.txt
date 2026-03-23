@@ -1,0 +1,2 @@
+selanet-sdk>=0.2.2
+python-dotenv
