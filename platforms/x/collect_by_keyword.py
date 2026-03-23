@@ -3,7 +3,7 @@ X (Twitter) — Collect Tweets by Keyword
 
 Flow:
   1. Initialize client
-  2. Search X for a keyword using XParams
+  2. Search X for a keyword via URL
   3. For each tweet, fetch tweet detail + replies (comments)
   4. Save results to JSONL
 
@@ -12,10 +12,10 @@ Options:
   --comments N  Number of replies per tweet. 0 = skip replies.
 
 Usage:
-  python platforms/x/collect_by_keyword.py --keyword "kpop" --count 10
-  python platforms/x/collect_by_keyword.py --keyword "AI" --count 20 --comments 50
-  python platforms/x/collect_by_keyword.py --keyword "python" --count 50 --parallel
-  python platforms/x/collect_by_keyword.py --keyword "python" --count 50 --parallel --comments 0
+  uv run platforms/x/collect_by_keyword.py --keyword "ai" --count 10
+  uv run platforms/x/collect_by_keyword.py --keyword "AI" --count 20 --comments 50
+  uv run platforms/x/collect_by_keyword.py --keyword "python" --count 50 --parallel
+  uv run platforms/x/collect_by_keyword.py --keyword "python" --count 50 --parallel --comments 0
 
 Search tabs: Top, Latest, People, Media
 """
@@ -28,12 +28,13 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import quote, urlencode
 
 # Ensure project root is importable when run from any directory
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from dotenv import load_dotenv
-from selanet_sdk import SelaClient, BrowseOptions, XParams, ParallelBrowseItem
+from selanet_sdk import SelaClient, BrowseOptions, ParallelBrowseItem
 
 from shared import create_logger, timed, save_jsonl
 
@@ -46,7 +47,40 @@ BATCH_SIZE = 3
 REQUEST_DELAY_SEC = 5          # delay between sequential requests (rate limiting)
 RETRY_COUNT = 1                # number of retries on failure (1 = try once more)
 
-X_BASE_URL = "https://x.com"
+X_SEARCH_BASE = "https://x.com/search"
+
+# search tab → X query parameter mapping
+SEARCH_TAB_MAP = {
+    "Top": "top",
+    "Latest": "live",
+    "People": "user",
+    "Media": "media",
+}
+
+
+def build_search_url(keyword: str, search_tab: str, lang: str | None,
+                     since: str | None, until: str | None,
+                     min_likes: int | None, min_retweets: int | None) -> str:
+    """Build X search URL with filters encoded as query parameters."""
+    # Build advanced search query
+    query_parts = [keyword]
+    if lang:
+        query_parts.append(f"lang:{lang}")
+    if since:
+        query_parts.append(f"since:{since}")
+    if until:
+        query_parts.append(f"until:{until}")
+    if min_likes:
+        query_parts.append(f"min_faves:{min_likes}")
+    if min_retweets:
+        query_parts.append(f"min_retweets:{min_retweets}")
+
+    params = {
+        "q": " ".join(query_parts),
+        "src": "typed_query",
+        "f": SEARCH_TAB_MAP.get(search_tab, "top"),
+    }
+    return f"{X_SEARCH_BASE}?{urlencode(params, quote_via=quote)}"
 
 
 def parse_response_content(response):
@@ -66,18 +100,8 @@ async def search_tweets(client, logger, keyword, search_tab, count, lang, since,
                         min_likes, min_retweets):
     """Search X for tweets matching a keyword. Returns list of tweet dicts."""
     log = logger.log
-    log(f"\n[Step 2] Search X: keyword=\"{keyword}\" tab={search_tab} count={count}")
-
-    x_params = XParams(
-        feature="search",
-        query=keyword,
-        search_tab=search_tab,
-        lang=lang if lang else None,
-        since=since if since else None,
-        until=until if until else None,
-        min_likes=min_likes if min_likes else None,
-        min_retweets=min_retweets if min_retweets else None,
-    )
+    search_url = build_search_url(keyword, search_tab, lang, since, until, min_likes, min_retweets)
+    log(f"\n[Step 2] Search: {search_url} (count={count})")
 
     search_response = None
     for attempt in range(1, RETRY_COUNT + 2):
@@ -85,12 +109,8 @@ async def search_tweets(client, logger, keyword, search_tab, count, lang, since,
             logger,
             f"client.browse (search, count={count}, attempt {attempt}/{RETRY_COUNT + 1})",
             client.browse(
-                url=X_BASE_URL,
-                options=BrowseOptions(
-                    count=count,
-                    timeout_ms=DEFAULT_TIMEOUT_MS,
-                    x_params=x_params,
-                ),
+                url=search_url,
+                options=BrowseOptions(count=count, timeout_ms=DEFAULT_TIMEOUT_MS),
             ),
             timeout=360,
         )
@@ -132,10 +152,9 @@ async def fetch_details_parallel(client, logger, tweets, tweet_links, comment_co
             options=BrowseOptions(
                 count=comment_count if comment_count > 0 else None,
                 timeout_ms=DEFAULT_TIMEOUT_MS,
-                x_params=XParams(feature="tweet_detail", tweet_id=tweet_id),
             ),
         )
-        for _, link, tweet_id in tweet_links
+        for _, link in tweet_links
     ]
 
     results = []
@@ -155,10 +174,10 @@ async def fetch_details_parallel(client, logger, tweets, tweet_links, comment_co
         failed_indices = []
         if batch_results:
             for r in sorted(batch_results, key=lambda r: r.index):
-                tweet_idx, link, tweet_id = tweet_links[batch_start + r.index]
+                tweet_idx, link = tweet_links[batch_start + r.index]
                 if r.error:
                     log(f"    [{batch_start + r.index + 1}/{len(tweet_links)}] FAIL: {r.error}")
-                    failed_indices.append((batch_start + r.index, tweet_idx, link, tweet_id))
+                    failed_indices.append((batch_start + r.index, tweet_idx, link))
                 else:
                     data = parse_response_content(r.response)
                     data["search_tweet"] = tweets[tweet_idx]
@@ -170,14 +189,14 @@ async def fetch_details_parallel(client, logger, tweets, tweet_links, comment_co
         else:
             log(f"    Batch {batch_num} failed: {err}")
             failed_indices = [
-                (batch_start + i, tweet_links[batch_start + i][0], tweet_links[batch_start + i][1], tweet_links[batch_start + i][2])
+                (batch_start + i, tweet_links[batch_start + i][0], tweet_links[batch_start + i][1])
                 for i in range(len(batch))
             ]
 
         # Retry failed items
         failed_indices = await _retry_parallel(client, logger, tweets, tweet_links, failed_indices, comment_count, results)
 
-        for global_idx, tweet_idx, link, tweet_id in failed_indices:
+        for global_idx, tweet_idx, link in failed_indices:
             results.append({"search_tweet": tweets[tweet_idx], "error": "failed after retries"})
 
     return results
@@ -197,10 +216,9 @@ async def _retry_parallel(client, logger, tweets, tweet_links, failed_indices, c
                 options=BrowseOptions(
                     count=comment_count if comment_count > 0 else None,
                     timeout_ms=DEFAULT_TIMEOUT_MS,
-                    x_params=XParams(feature="tweet_detail", tweet_id=tweet_id),
                 ),
             )
-            for _, _, link, tweet_id in failed_indices
+            for _, _, link in failed_indices
         ]
         retry_results, retry_err = await timed(
             logger,
@@ -210,10 +228,10 @@ async def _retry_parallel(client, logger, tweets, tweet_links, failed_indices, c
         )
         if retry_results:
             for r in sorted(retry_results, key=lambda r: r.index):
-                global_idx, tweet_idx, link, tweet_id = failed_indices[r.index]
+                global_idx, tweet_idx, link = failed_indices[r.index]
                 if r.error:
                     log(f"    [{global_idx + 1}/{len(tweet_links)}] RETRY FAIL: {r.error}")
-                    still_failed.append((global_idx, tweet_idx, link, tweet_id))
+                    still_failed.append((global_idx, tweet_idx, link))
                 else:
                     data = parse_response_content(r.response)
                     data["search_tweet"] = tweets[tweet_idx]
@@ -238,7 +256,7 @@ async def fetch_details_sequential(client, logger, tweets, tweet_links, comment_
 
     results = []
 
-    for seq, (tweet_idx, link, tweet_id) in enumerate(tweet_links):
+    for seq, (tweet_idx, link) in enumerate(tweet_links):
         if seq > 0:
             log(f"  (waiting {REQUEST_DELAY_SEC}s...)")
             await asyncio.sleep(REQUEST_DELAY_SEC)
@@ -255,7 +273,6 @@ async def fetch_details_sequential(client, logger, tweets, tweet_links, comment_
                     options=BrowseOptions(
                         count=comment_count if comment_count > 0 else None,
                         timeout_ms=DEFAULT_TIMEOUT_MS,
-                        x_params=XParams(feature="tweet_detail", tweet_id=tweet_id),
                     ),
                 ),
                 timeout=360,
@@ -282,16 +299,15 @@ async def fetch_details_sequential(client, logger, tweets, tweet_links, comment_
 
 
 def extract_tweet_links(tweets):
-    """Extract (index, url, tweet_id) tuples from search results."""
+    """Extract (index, url) tuples from search results."""
     links = []
     for i, tweet in enumerate(tweets):
         link = tweet.get("link") or tweet.get("url")
-        tweet_id = tweet.get("tweet_id") or tweet.get("id")
         if link:
-            # Extract tweet_id from URL if not in fields: https://x.com/user/status/123456
-            if not tweet_id and "/status/" in link:
-                tweet_id = link.split("/status/")[-1].split("?")[0].split("/")[0]
-            links.append((i, link, tweet_id))
+            # API returns relative paths like /user/status/123 — prepend base URL
+            if link.startswith("/"):
+                link = f"https://x.com{link}"
+            links.append((i, link))
     return links
 
 

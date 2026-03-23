@@ -23,6 +23,12 @@ uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10 -
 
 # Run with comments and parallel
 uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10 --comments 100 --parallel
+
+# X (Twitter) — search tweets
+uv run platforms/x/collect_by_keyword.py --keyword "ai" --count 10
+
+# X with replies and parallel
+uv run platforms/x/collect_by_keyword.py --keyword "ai" --count 10 --comments 100 --parallel
 ```
 
 ## Platforms
@@ -30,6 +36,7 @@ uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10 -
 | Platform | Examples |
 |----------|----------|
 | [Xiaohongshu (RED)](platforms/xiaohongshu/) | Keyword search, parallel detail + comment collection |
+| [X (Twitter)](platforms/x/) | Keyword search, parallel detail + reply collection |
 
 ## Sample Output
 

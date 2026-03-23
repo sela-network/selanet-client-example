@@ -43,8 +43,8 @@ load_dotenv()
 
 
 # ── Config ──────────────────────────────────────────────────────────
-DEFAULT_TIMEOUT_MS = 240_000   # 4 min per request
-BATCH_SIZE = 3
+DEFAULT_TIMEOUT_MS = 300_000   # 5 min per request
+BATCH_SIZE = 9
 REQUEST_DELAY_SEC = 5          # delay between sequential requests (rate limiting)
 RETRY_COUNT = 1                # number of retries on failure (1 = try once more)
 
