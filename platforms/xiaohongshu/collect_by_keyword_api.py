@@ -318,6 +318,39 @@ async def collect_by_keyword(
             log(f"  Elapsed: {elapsed:.1f}s")
             log("=" * 60)
 
+            # ── Sample output ─────────────────────────────────────
+            print("\n" + "=" * 60)
+            print("Sample collected data")
+            print("=" * 60)
+
+            sample_results = [r for r in results if "error" not in r][:3] if results else []
+            for i, r in enumerate(sample_results):
+                detail = r.get("detail", {})
+                comments = r.get("comments", [])
+                title = detail.get("title", "N/A")
+                text = detail.get("text", "N/A")
+                author = detail.get("author_name", detail.get("author_nickname", "N/A"))
+                print(f"\n[Post {i+1}] {title}")
+                print(f"  author:   {author}")
+                print(f"  text:     {text[:120]}{'...' if len(text) > 120 else ''}")
+                print(f"  likes:    {detail.get('like_count', 'N/A')}")
+                print(f"  collects: {detail.get('collect_count', 'N/A')}")
+                print(f"  comments: {len(comments)} collected")
+                for j, c in enumerate(comments[:2]):
+                    c_author = c.get("author_name", c.get("author_nickname", "N/A"))
+                    c_text = c.get("text", "N/A")
+                    print(f"    comment {j+1}: {c_author} — {c_text[:80]}{'...' if len(c_text) > 80 else ''}")
+                if len(comments) > 2:
+                    print(f"    ... and {len(comments) - 2} more comments")
+
+            if not sample_results and notes:
+                print("\n(No detail results — showing search notes)")
+                for i, n in enumerate(notes[:3]):
+                    title = n.get("title", "N/A")
+                    print(f"  [{i+1}] {title[:100]} | likes={n.get('like_count', 'N/A')}")
+
+            print("=" * 60)
+
         finally:
             log(f"\nLog saved → {output_dir / 'collect.log'}")
             logger.close()
