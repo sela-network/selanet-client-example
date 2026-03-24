@@ -25,6 +25,7 @@ from shared import create_logger, timed, save_jsonl
 load_dotenv()
 
 DEFAULT_TIMEOUT_MS = 240_000
+ASYNC_TIMEOUT_SEC = 600        # 10 min async timeout for timed() calls
 
 
 async def collect(query: str, count: int):
@@ -62,7 +63,7 @@ async def collect(query: str, count: int):
     #             timeout_ms=DEFAULT_TIMEOUT_MS,
     #         ),
     #     ),
-    #     timeout=360,
+    #     timeout=ASYNC_TIMEOUT_SEC,
     # )
 
     await timed(logger, "client.shutdown()", client.shutdown(), timeout=15)

@@ -44,6 +44,7 @@ load_dotenv()
 
 # ── Config ──────────────────────────────────────────────────────────
 DEFAULT_TIMEOUT_MS = 300_000   # 5 min per request
+ASYNC_TIMEOUT_SEC = 600        # 10 min async timeout for timed() calls
 BATCH_SIZE = 9
 REQUEST_DELAY_SEC = 5          # delay between sequential requests (rate limiting)
 RETRY_COUNT = 1                # number of retries on failure (1 = try once more)
@@ -90,7 +91,7 @@ async def search_notes(client, logger, keyword, sort, period, count):
                 url=search_url,
                 options=BrowseOptions(count=count, timeout_ms=DEFAULT_TIMEOUT_MS),
             ),
-            timeout=360,
+            timeout=ASYNC_TIMEOUT_SEC,
         )
         if search_response:
             break
@@ -144,7 +145,7 @@ async def fetch_details_parallel(client, logger, notes, note_links, comment_coun
             logger,
             f"browse_parallel_collect (batch {batch_num}/{total_batches}, {len(batch)} notes)",
             client.browse_parallel_collect(batch, max_concurrent_per_agent=BATCH_SIZE),
-            timeout=360,
+            timeout=ASYNC_TIMEOUT_SEC,
         )
 
         failed_indices = []
@@ -200,7 +201,7 @@ async def _retry_parallel(client, logger, notes, note_links, failed_indices, com
             logger,
             f"browse_parallel_collect (retry, {len(retry_items)} notes)",
             client.browse_parallel_collect(retry_items, max_concurrent_per_agent=BATCH_SIZE),
-            timeout=360,
+            timeout=ASYNC_TIMEOUT_SEC,
         )
         if retry_results:
             for r in sorted(retry_results, key=lambda r: r.index):
@@ -251,7 +252,7 @@ async def fetch_details_sequential(client, logger, notes, note_links, comment_co
                         timeout_ms=DEFAULT_TIMEOUT_MS,
                     ),
                 ),
-                timeout=360,
+                timeout=ASYNC_TIMEOUT_SEC,
             )
             if detail_response:
                 break
