@@ -95,8 +95,8 @@ async def api_browse(client: httpx.AsyncClient, api_key: str, url: str,
 def parse_response_content(response: dict):
     """Parse an API browse response into a dict with detail and comments."""
     data = {"search_note": None, "detail": {}, "comments": []}
-    page = response.get("page", {})
-    for item in page.get("content", []):
+    content = response.get("content") or response.get("page", {}).get("content", [])
+    for item in content:
         fields = item.get("fields", {})
         if isinstance(fields, str):
             fields = json.loads(fields)
@@ -130,8 +130,7 @@ async def search_notes(client, api_key, logger, keyword, sort, period, count):
 
     notes = []
     if response:
-        page = response.get("page", {})
-        content = page.get("content", [])
+        content = response.get("content") or response.get("page", {}).get("content", [])
         log(f"  total content items: {len(content)}")
         for item in content:
             fields = item.get("fields", {})

@@ -17,10 +17,7 @@ Options:
   --comments N  Number of replies per tweet. 0 = skip replies.
 
 Usage:
-  uv run platforms/x/collect_by_keyword_api.py --keyword "ai" --count 10
-  uv run platforms/x/collect_by_keyword_api.py --keyword "AI" --count 20 --comments 50
-  uv run platforms/x/collect_by_keyword_api.py --keyword "python" --count 50 --parallel
-  uv run platforms/x/collect_by_keyword_api.py --keyword "python" --count 50 --parallel --comments 0
+  uv run platforms/x/collect_by_keyword_api.py --keyword "ai" --count 10 --comments 10 --parallel
 
 Search tabs: Top, Latest, People, Media
 """
@@ -117,8 +114,8 @@ async def api_browse(client: httpx.AsyncClient, api_key: str, url: str,
 def parse_response_content(response: dict):
     """Parse an API browse response into a dict with tweet detail and replies."""
     data = {"search_tweet": None, "detail": {}, "comments": []}
-    page = response.get("page", {})
-    for item in page.get("content", []):
+    content = response.get("content") or response.get("page", {}).get("content", [])
+    for item in content:
         fields = item.get("fields", {})
         if isinstance(fields, str):
             fields = json.loads(fields)
@@ -153,8 +150,7 @@ async def search_tweets(client, api_key, logger, keyword, search_tab, count,
 
     tweets = []
     if response:
-        page = response.get("page", {})
-        content = page.get("content", [])
+        content = response.get("content") or response.get("page", {}).get("content", [])
         log(f"  total content items: {len(content)}")
         for item in content:
             fields = item.get("fields", {})
