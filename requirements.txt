@@ -1,2 +1,3 @@
 selanet-sdk>=0.2.2
 python-dotenv
+httpx>=0.27

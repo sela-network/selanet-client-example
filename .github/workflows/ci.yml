@@ -36,6 +36,9 @@ jobs:
       - name: Verify examples parse
         run: |
           python -m py_compile platforms/xiaohongshu/collect_by_keyword.py
+          python -m py_compile platforms/xiaohongshu/collect_by_keyword_api.py
+          python -m py_compile platforms/x/collect_by_keyword.py
+          python -m py_compile platforms/x/collect_by_keyword_api.py
           python -m py_compile platforms/_template/basic_collect.py
           python -m py_compile shared/logger.py
           python -m py_compile shared/output.py

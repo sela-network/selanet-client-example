@@ -1,11 +1,11 @@
 # Selanet Client Examples
 
-Example collection for the [Selanet SDK](https://selanet.io).
+Example collection for the [Selanet SDK](https://selanet.ai).
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/selanet/selanet-client-example.git
+git clone https://github.com/sela-network/selanet-client-example.git
 cd selanet-client-example
 
 # Install dependencies
@@ -13,7 +13,7 @@ uv sync
 
 # Set API key
 cp .env.example .env
-# Add your SELA_API_KEY (get one at https://selanet.io)
+# Add your SELA_API_KEY (get one at https://selanet.ai)
 
 # Run an example
 uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10
@@ -29,6 +29,14 @@ uv run platforms/x/collect_by_keyword.py --keyword "ai" --count 10
 
 # X with replies and parallel
 uv run platforms/x/collect_by_keyword.py --keyword "ai" --count 10 --comments 100 --parallel
+
+# ── API-only (no SDK, uses httpx) ──────────────────────────
+
+# XHS via REST API
+uv run platforms/xiaohongshu/collect_by_keyword_api.py --keyword "kpop" --count 10 --parallel
+
+# X via REST API
+uv run platforms/x/collect_by_keyword_api.py --keyword "ai" --count 10 --comments 10 --parallel
 ```
 
 ## Platforms
@@ -38,14 +46,10 @@ uv run platforms/x/collect_by_keyword.py --keyword "ai" --count 10 --comments 10
 | [Xiaohongshu (RED)](platforms/xiaohongshu/) | Keyword search, parallel detail + comment collection |
 | [X (Twitter)](platforms/x/) | Keyword search, parallel detail + reply collection |
 
-## Sample Output
-
-See [`examples/sample_output/`](examples/sample_output/) for example JSONL output.
-
 ## Requirements
 
 - Python 3.10+
-- [Selanet API Key](https://selanet.io)
+- [Selanet API Key](https://selanet.ai)
 
 ## Disclaimer
 

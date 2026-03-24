@@ -4,16 +4,16 @@
 
 ```bash
 # Basic (sequential, 10 notes)
-uv run python platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10
+uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10
 
 # Parallel mode
-uv run python platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 50 --parallel
+uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 50 --parallel
 
 # Custom comment count
-uv run python platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 20 --comments 30
+uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 20 --comments 30
 
 # Skip comments
-uv run python platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10 --parallel --comments 0
+uv run platforms/xiaohongshu/collect_by_keyword.py --keyword "kpop" --count 10 --parallel --comments 0
 ```
 
 ## Options
@@ -33,5 +33,3 @@ JSONL files saved to `output/xhs_keyword_<timestamp>/`:
 
 - `search_results.jsonl` — search results
 - `notes_with_comments.jsonl` — note details + comments
-
-See [`examples/sample_output/`](../../examples/sample_output/) for sample data.
