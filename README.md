@@ -30,6 +30,13 @@ uv run platforms/x/collect_by_keyword.py --keyword "ai" --count 10
 # X with replies and parallel
 uv run platforms/x/collect_by_keyword.py --keyword "ai" --count 10 --comments 100 --parallel
 
+# YouTube — search videos
+uv run platforms/youtube/collect_by_keyword_api.py --keyword "ai" --count 10
+
+# LinkedIn — search posts
+uv run platforms/linkedin/collect_by_keyword.py --keyword "AI" --count 10
+uv run platforms/linkedin/collect_by_keyword.py --keyword "startup" --count 20 --date-posted past-week --sort date
+
 # ── API-only (no SDK, uses httpx) ──────────────────────────
 
 # XHS via REST API
@@ -37,6 +44,9 @@ uv run platforms/xiaohongshu/collect_by_keyword_api.py --keyword "kpop" --count 
 
 # X via REST API
 uv run platforms/x/collect_by_keyword_api.py --keyword "ai" --count 10 --comments 10 --parallel
+
+# LinkedIn via REST API
+uv run platforms/linkedin/collect_by_keyword_api.py --keyword "AI" --count 10
 ```
 
 ## Platforms
@@ -45,6 +55,8 @@ uv run platforms/x/collect_by_keyword_api.py --keyword "ai" --count 10 --comment
 |----------|----------|
 | [Xiaohongshu (RED)](platforms/xiaohongshu/) | Keyword search, parallel detail + comment collection |
 | [X (Twitter)](platforms/x/) | Keyword search, parallel detail + reply collection |
+| [YouTube](platforms/youtube/) | Keyword search (REST API) |
+| [LinkedIn](platforms/linkedin/) | Keyword search (SDK + REST API), date/sort filters |
 
 ## Requirements
 
