@@ -65,35 +65,35 @@ uv run platforms/linkedin/collect_by_keyword_api.py --keyword "AI" --count 10
 
 ## FAQ
 
-### API 키는 어디서 받나요?
+### Where do I get an API key?
 
-[selanet.ai](https://selanet.ai)에서 가입 후 발급받을 수 있습니다. 발급받은 키를 `.env` 파일의 `SELA_API_KEY`에 설정하세요.
+Sign up at [selanet.ai](https://selanet.ai) and generate a key. Set it as `SELA_API_KEY` in your `.env` file.
 
-### SDK 버전과 API 버전의 차이는?
+### What is the difference between SDK and API versions?
 
 | | SDK (`selanet-sdk`) | API (`httpx`) |
 |---|---|---|
-| 초기화 | `SelaClient.with_api_key()` | httpx 클라이언트 직접 생성 |
-| 병렬 수집 | `browse_parallel_collect()` 내장 | `asyncio.gather()` 직접 구현 |
-| 연결 관리 | `client.shutdown()` 자동 정리 | 수동 관리 |
-| 의존성 | `selanet-sdk` 필요 | `httpx`만 필요 |
+| Initialization | `SelaClient.with_api_key()` | Create httpx client directly |
+| Parallel collection | Built-in `browse_parallel_collect()` | Manual `asyncio.gather()` |
+| Connection management | Auto cleanup via `client.shutdown()` | Manual management |
+| Dependencies | Requires `selanet-sdk` | Only `httpx` |
 
-SDK 버전은 편의 기능이 내장되어 있어 간편하고, API 버전은 외부 의존성이 적어 가볍습니다.
+The SDK version provides built-in convenience features. The API version is lighter with fewer external dependencies.
 
-### 플랫폼별로 지원하는 기능이 다른가요?
+### Do supported features vary by platform?
 
-| Platform | 상세 조회 | 댓글 수집 | 필터 |
-|----------|:---------:|:---------:|------|
-| Xiaohongshu | ✅ | ✅ (최대 450) | 기간, 정렬 |
-| X (Twitter) | ✅ | ✅ (최대 50) | 언어, 날짜 범위, 최소 좋아요/리트윗, 검색 탭 |
-| YouTube | ✅ | ✅ (최대 50) | 정렬 |
-| LinkedIn | ❌ | ❌ | 게시 기간, 정렬 |
+| Platform | Detail fetch | Comments | Filters |
+|----------|:-----------:|:--------:|---------|
+| Xiaohongshu | ✅ | ✅ (up to 450) | Period, sort |
+| X (Twitter) | ✅ | ✅ (up to 50) | Language, date range, min likes/retweets, search tab |
+| YouTube | ✅ | ✅ (up to 50) | Sort |
+| LinkedIn | ❌ | ❌ | Date posted, sort |
 
-LinkedIn은 검색 결과에 개별 포스트 URL이 포함되지 않아 상세 조회 및 댓글 수집이 불가합니다.
+LinkedIn search results do not include individual post URLs, so detail and comment fetching is not available.
 
-### 출력 형식은?
+### What is the output format?
 
-JSONL (JSON Lines) 형식으로 `output/` 디렉토리에 저장됩니다. 각 실행마다 타임스탬프 폴더가 생성됩니다.
+Results are saved in JSONL (JSON Lines) format under the `output/` directory. Each run creates a timestamped folder.
 
 ```
 output/
@@ -103,13 +103,13 @@ output/
     collect.log
 ```
 
-### `--parallel` 옵션은 어떻게 동작하나요?
+### How does the `--parallel` option work?
 
-상세 조회와 댓글 수집을 배치 단위로 동시 요청합니다. 순차 모드 대비 수집 속도가 빨라지지만, 요청 제한(rate limit)에 걸릴 수 있으므로 배치 크기가 플랫폼별로 조절되어 있습니다 (XHS: 9, X: 3).
+It sends detail and comment requests concurrently in batches. This is faster than sequential mode but may hit rate limits, so batch sizes are tuned per platform (XHS: 9, X: 3).
 
-### 타임아웃이나 요청 실패 시 어떻게 되나요?
+### What happens on timeout or request failure?
 
-각 요청은 자동으로 1회 재시도하며, 요청 간 5초 딜레이가 적용됩니다. 타임아웃 기본값은 요청당 4분, 전체 작업 10분입니다. 이 값들은 각 스크립트 상단의 상수에서 조정할 수 있습니다.
+Each request is automatically retried once with a 5-second delay between requests. Default timeouts are 4 minutes per request and 10 minutes for the overall operation. These values can be adjusted via constants at the top of each script.
 
 ## Disclaimer
 
